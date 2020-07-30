@@ -24,3 +24,27 @@ cc_test(
        "@gtest//:gtest_main"
    ],
 )
+
+cc_library(
+    name = "formatter_util_lib",
+    srcs = ["formatter_util.cc"],
+    hdrs = [
+        "formatter_util.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//third_party/statusor:statusor_lib",
+        "//proto:cloud_event_cc_proto",
+        "//v1/event_format:json_formatter_lib",
+    ],
+)
+
+cc_test(
+   name = "formatter_util_test",
+   srcs = ["formatter_util_test.cc"],
+   deps = [
+       ":formatter_util_lib",
+       "@gtest//:gtest",
+       "@gtest//:gtest_main"
+   ],
+)
