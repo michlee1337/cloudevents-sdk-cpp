@@ -13,13 +13,8 @@ namespace binding {
  * view `//v1/protocol_binding/binder.h`.
  */
 template <>
-absl::StatusOr<bool> 
-    Binder<google::pubsub::v1::PubsubMessage>::InStructuredContentMode(
-    google::pubsub::v1::PubsubMessage& pubsub_msg);
-
-template <>
-absl::StatusOr<cloudevents::format::Format> 
-    Binder<google::pubsub::v1::PubsubMessage>::GetFormat(
+absl::StatusOr<std::string> 
+    Binder<google::pubsub::v1::PubsubMessage>::GetContentType(
     google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
