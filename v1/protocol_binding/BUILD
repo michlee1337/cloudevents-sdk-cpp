@@ -17,25 +17,25 @@ cc_library(
 )
 
 cc_library(
-    name = "pubsub_binder_lib",
+    name = "http_binder_lib",
     srcs = [
-        "pubsub_binder.cc"
+        "http_binder.cc"
     ],
     hdrs = [
-        "pubsub_binder.h",
+        "http_binder.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//proto:pubsub_cc_proto",
+        "@boost//:beast",
         ":binder_lib",
     ],
 )
 
 cc_test(
-   name = "pubsub_binder_test",
-   srcs = ["pubsub_binder_test.cc"],
+   name = "http_binder_test",
+   srcs = ["http_binder_test.cc"],
    deps = [
-       ":pubsub_binder_lib",
+       ":http_binder_lib",
        "@gtest//:gtest",
        "@gtest//:gtest_main"
    ],
