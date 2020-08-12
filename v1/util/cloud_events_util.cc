@@ -10,12 +10,17 @@ using ::io::cloudevents::v1::CloudEvent_CloudEventAttribute;
 using ::google::protobuf::Timestamp;
 using ::google::protobuf::util::TimeUtil;
 
+constexpr char kErrCeInvalid[] = "Given Cloud Event is missing required attributes.";
+constexpr char kErrTimeInvalid[] = "Given time is invalid because it does not comply to RFC 3339.";
+constexpr char kErrAttrNotSet[] = "Given Cloud Event attribute is not set.";
+constexpr char kErrAttrNotHandled[] = "A Cloud Event type is not handled.";
+
 absl::Status CloudEventsUtil::IsValid(const CloudEvent& cloud_event) {
     if (cloud_event.id().empty() ||
             cloud_event.source().empty() ||
             cloud_event.spec_version().empty() ||
             cloud_event.type().empty()) {
-        return absl::InvalidArgumentError("Given Cloud Event is missing required attributes.");
+        return absl::InvalidArgumentError(kErrCeInvalid);
     }
     return absl::OkStatus();
 }
@@ -62,7 +67,7 @@ absl::Status CloudEventsUtil::SetMetadata(const std::string& key,
         CloudEvent_CloudEventAttribute attr;
         Timestamp timestamp;
         if (!TimeUtil::FromString(val, &timestamp)) {
-            return absl::InvalidArgumentError("Time given is invalid because it does not comply to RFC 3339.");
+            return absl::InvalidArgumentError(kErrTimeInvalid);
         }
         (*attr.mutable_ce_timestamp()) = timestamp;
         (*cloud_event.mutable_attributes())[key] = attr;
@@ -96,10 +101,9 @@ absl::StatusOr<std::string> CloudEventsUtil::StringifyCeType(
             // protobuf also uses RFC3339 representation
             return TimeUtil::ToString(attr.ce_timestamp());
         case CloudEvent_CloudEventAttribute::AttrOneofCase::ATTR_ONEOF_NOT_SET:
-            return absl::InvalidArgumentError(
-                "Cloud Event metadata attribute not set.");
+            return absl::InvalidArgumentError(kErrAttrNotSet);
     }
-    return absl::InternalError("A CE type is not handled in StringifyCeType.");
+    return absl::InternalError(kErrAttrNotHandled);
 }
 
 }  // namespace cloudevents_util
