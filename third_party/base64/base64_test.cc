@@ -75,4 +75,5 @@ TEST(Decode, FillTwo) {
    ASSERT_EQ(rest2_decoded, rest2_original);
 }
 
-}  // namespace cloudevents_base64
+
+}  // namespace base64
