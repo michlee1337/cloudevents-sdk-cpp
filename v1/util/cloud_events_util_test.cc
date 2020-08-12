@@ -212,7 +212,7 @@ TEST(CloudEventsUtilTest, ToString_BoolFalse) {
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
   ASSERT_TRUE(stringify_ce_type.ok());
-  ASSERT_EQ((*stringify_ce_type), "false");
+  ASSERT_EQ(*stringify_ce_type, "false");
 }
 
 TEST(CloudEventsUtilTest, ToString_BoolTrue) {
@@ -223,7 +223,7 @@ TEST(CloudEventsUtilTest, ToString_BoolTrue) {
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
   ASSERT_TRUE(stringify_ce_type.ok());
-  ASSERT_EQ((*stringify_ce_type), "true");
+  ASSERT_EQ(*stringify_ce_type, "true");
 }
 
 TEST(CloudEventsUtilTest, ToString_Integer) {
@@ -234,7 +234,7 @@ TEST(CloudEventsUtilTest, ToString_Integer) {
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
   ASSERT_TRUE(stringify_ce_type.ok());
-  ASSERT_EQ((*stringify_ce_type), "88");
+  ASSERT_EQ(*stringify_ce_type, "88");
 }
 
 TEST(CloudEventsUtilTest, ToString_String) {
@@ -245,7 +245,7 @@ TEST(CloudEventsUtilTest, ToString_String) {
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
   ASSERT_TRUE(stringify_ce_type.ok());
-  ASSERT_EQ((*stringify_ce_type), "test");
+  ASSERT_EQ(*stringify_ce_type, "test");
 }
 
 TEST(CloudEventsUtilTest, ToString_URI) {
@@ -256,7 +256,7 @@ TEST(CloudEventsUtilTest, ToString_URI) {
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
   ASSERT_TRUE(stringify_ce_type.ok());
-  ASSERT_EQ((*stringify_ce_type), "https://google.com");
+  ASSERT_EQ(*stringify_ce_type, "https://google.com");
 }
 
 TEST(CloudEventsUtilTest, ToString_URIRef) {
@@ -267,7 +267,7 @@ TEST(CloudEventsUtilTest, ToString_URIRef) {
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
   ASSERT_TRUE(stringify_ce_type.ok());
-  ASSERT_EQ((*stringify_ce_type), "https://www.google.com/#fragment");
+  ASSERT_EQ(*stringify_ce_type, "https://www.google.com/#fragment");
 }
 
 TEST(CloudEventsUtilTest, ToString_Timestamp) {
@@ -279,7 +279,7 @@ TEST(CloudEventsUtilTest, ToString_Timestamp) {
 
   stringify_ce_type = CloudEventsUtil::ToString(attr);
 
-  ASSERT_EQ((*stringify_ce_type), timestamp_str);
+  ASSERT_EQ(*stringify_ce_type, timestamp_str);
 }
 
 TEST(CloudEventsUtilTest, ToString_NotSet) {
