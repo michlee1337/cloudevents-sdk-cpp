@@ -18,7 +18,7 @@ struct StructuredCloudEvent {
   std::string serialization;
 };
 
-} // format
-} // cloudevents
+}  // namespace format
+}  // namespace cloudevents
 
-#endif //CLOUDEVENTCPPSDK_V1_EVENTFORMAT_STRUCTUREDCLOUDEVENT_H_
+#endif  // CLOUDEVENTCPPSDK_V1_EVENTFORMAT_STRUCTUREDCLOUDEVENT_H_
