@@ -21,7 +21,10 @@ TEST(CloudEventsUtilTest, IsValid_NoSource) {
     cloud_event.set_spec_version("1.0");
     cloud_event.set_type("test");
 
-    ASSERT_FALSE(CloudEventsUtil::IsValid(cloud_event));
+    absl::Status is_valid = CloudEventsUtil::IsValid(cloud_event);
+
+    ASSERT_FALSE(is_valid.ok());
+    ASSERT_TRUE(absl::IsInvalidArgument(is_valid));
 }
 
 TEST(CloudEventsUtilTest, IsValid_NoSpecVersion) {
@@ -30,7 +33,10 @@ TEST(CloudEventsUtilTest, IsValid_NoSpecVersion) {
     cloud_event.set_source("/test");
     cloud_event.set_type("test");
 
-    ASSERT_FALSE(CloudEventsUtil::IsValid(cloud_event));
+    absl::Status is_valid = CloudEventsUtil::IsValid(cloud_event);
+
+    ASSERT_FALSE(is_valid.ok());
+    ASSERT_TRUE(absl::IsInvalidArgument(is_valid));
 }
 
 TEST(CloudEventsUtilTest, IsValid_NoType) {
@@ -39,7 +45,10 @@ TEST(CloudEventsUtilTest, IsValid_NoType) {
     cloud_event.set_source("/test");
     cloud_event.set_spec_version("1.0");
 
-    ASSERT_FALSE(CloudEventsUtil::IsValid(cloud_event));
+    absl::Status is_valid = CloudEventsUtil::IsValid(cloud_event);
+
+    ASSERT_FALSE(is_valid.ok());
+    ASSERT_TRUE(absl::IsInvalidArgument(is_valid));
 }
 
 TEST(CloudEventsUtilTest, IsValid_HasRequired) {
@@ -49,7 +58,9 @@ TEST(CloudEventsUtilTest, IsValid_HasRequired) {
     cloud_event.set_spec_version("1.0");
     cloud_event.set_type("test");
 
-    ASSERT_TRUE(CloudEventsUtil::IsValid(cloud_event));
+    absl::Status is_valid = CloudEventsUtil::IsValid(cloud_event);
+
+    ASSERT_TRUE(is_valid.ok());
 }
 
 TEST(CloudEventsUtilTest, GetMetadata_InvalidCloudEvent) {
@@ -142,7 +153,7 @@ TEST(CloudEventsUtilTest, SetMetadata_Source) {
     CloudEvent cloud_event;
 
     absl::Status set_meta = CloudEventsUtil::SetMetadata("source", "/a_source",
-    // cloud_event);
+    cloud_event);
 
     ASSERT_TRUE(set_meta.ok());
     ASSERT_EQ(cloud_event.source(), "/a_source");

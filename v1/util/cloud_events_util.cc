@@ -10,19 +10,22 @@ using ::io::cloudevents::v1::CloudEvent_CloudEventAttribute;
 using ::google::protobuf::Timestamp;
 using ::google::protobuf::util::TimeUtil;
 
-bool CloudEventsUtil::IsValid(const CloudEvent& cloud_event) {
-    return !(cloud_event.id().empty() ||
-        cloud_event.source().empty() ||
-        cloud_event.spec_version().empty() ||
-        cloud_event.type().empty());
+absl::Status CloudEventsUtil::IsValid(const CloudEvent& cloud_event) {
+    if (cloud_event.id().empty() ||
+            cloud_event.source().empty() ||
+            cloud_event.spec_version().empty() ||
+            cloud_event.type().empty()) {
+        return absl::InvalidArgumentError("Given Cloud Event is missing required attributes.");
+    }
+    return absl::OkStatus();
 }
 
 absl::StatusOr<
         absl::flat_hash_map<std::string, CloudEvent_CloudEventAttribute>>
         CloudEventsUtil::GetMetadata(const CloudEvent& cloud_event) {
-    if (!CloudEventsUtil::IsValid(cloud_event)) {
-        return absl::InvalidArgumentError(
-            "GetMetadata can only be called with valid Cloud Event.");
+    absl::Status is_valid = CloudEventsUtil::IsValid(cloud_event);
+    if (!is_valid.ok()) {
+        return is_valid;
     }
 
     // create absl::flat_hash_map from protobuf map of optional/ extensionattrs
