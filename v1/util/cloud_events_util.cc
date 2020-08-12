@@ -7,6 +7,7 @@ namespace cloudevents_util {
 
 using ::io::cloudevents::v1::CloudEvent;
 using ::io::cloudevents::v1::CloudEvent_CloudEventAttribute;
+using ::google::protobuf::Timestamp;
 using ::google::protobuf::util::TimeUtil;
 
 bool CloudEventsUtil::IsValid(const CloudEvent& cloud_event) {
@@ -43,11 +44,9 @@ absl::StatusOr<
     return attrs;
 }
 
-void CloudEventsUtil::SetMetadata(const std::string& key,
+absl::Status CloudEventsUtil::SetMetadata(const std::string& key,
         const std::string& val, CloudEvent& cloud_event){
-    // TODO (#39): Should we try to infer CE Type from serialization?
-    CloudEvent_CloudEventAttribute attr;
-    attr.set_ce_string(val);
+    // TODO (#39): Recognize URI and URI Reference types
     if (key == "id") {
         cloud_event.set_id(val);
     } else if (key == "source") {
@@ -56,9 +55,21 @@ void CloudEventsUtil::SetMetadata(const std::string& key,
         cloud_event.set_spec_version(val);
     } else if (key == "type") {
         cloud_event.set_type(val);
+    } else if (key == "time") {
+        CloudEvent_CloudEventAttribute attr;
+        Timestamp timestamp;
+        if (!TimeUtil::FromString(val, &timestamp)) {
+            return absl::InvalidArgumentError("Time given is invalid because it does not comply to RFC 3339.");
+        }
+        (*attr.mutable_ce_timestamp()) = timestamp;
+        (*cloud_event.mutable_attributes())[key] = attr;
     } else {
+        // default assumes unrecognized attributes to be of type string
+        CloudEvent_CloudEventAttribute attr;
+        attr.set_ce_string(val);
         (*cloud_event.mutable_attributes())[key] = attr;
     }
+    return absl::OkStatus();
 }
 
 absl::StatusOr<std::string> CloudEventsUtil::StringifyCeType(
