@@ -93,7 +93,7 @@ absl::StatusOr<PubsubMessage> Binder<PubsubMessage>::BindBinary(CloudEvent& clou
     }
 
     for (auto const& attr : (*attrs)) {
-        absl::StatusOr<std::string> val = CloudEventsUtil::StringifyCeType(attr.second);
+        absl::StatusOr<std::string> val = CloudEventsUtil::ToString(attr.second);
         if (!val.ok()) {
             return val.status();
         }
