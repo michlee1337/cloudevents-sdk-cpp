@@ -73,7 +73,6 @@ TEST(Unbind, Binary_Required) {
     ASSERT_EQ((*unbind).type(), "4");
 }
 
-// DEV NOTE: currently failing due to issues with the Base64 lib
 TEST(Unbind, Structured_Required) {
     absl::StatusOr<CloudEvent> unbind;
     Binder<PubsubMessage> binder;
