@@ -79,13 +79,13 @@ TEST(Unbind, Structured_Required) {
     Binder<PubsubMessage> binder;
     PubsubMessage pmsg;
     (*pmsg.mutable_attributes())["content-type"] = "application/cloudevents+json";
-    pmsg.set_data("e1xuXHRcImlkXCIgOiBcIjFcIixcblx0XCJzb3VyY2VcIiA6IFwiMlwiLFxuXHRcInNwZWNfdmVyc2lvblwiIDogXCIzXCIsXG5cdFwidHlwZVwiIDogXCI0XCJcbn0=");
+    pmsg.set_data(base64::base64_encode("{\n\t\"id\" : \"1\",\n\t\"source\" : \"/test\",\n\t\"spec_version\" : \"1.0\",\n\t\"type\" : \"test\"\n}"));
     unbind = binder.Unbind(pmsg);
     ASSERT_TRUE(unbind.ok());
     ASSERT_EQ((*unbind).id(), "1");
-    ASSERT_EQ((*unbind).source(), "2");
-    ASSERT_EQ((*unbind).spec_version(), "3");
-    ASSERT_EQ((*unbind).type(), "4");
+    ASSERT_EQ((*unbind).source(), "/test");
+    ASSERT_EQ((*unbind).spec_version(), "1.0");
+    ASSERT_EQ((*unbind).type(), "test");
 }
 
 } // binding
