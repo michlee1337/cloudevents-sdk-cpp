@@ -46,7 +46,9 @@ absl::StatusOr<CloudEvent> Binder<PubsubMessage>::UnbindBinary(PubsubMessage& pu
             size_t len_prefix = strlen(kMetadataPrefix.data());
             key= attr.first.substr(len_prefix, std::string::npos);
         }
-        CloudEventsUtil::SetMetadata(cloud_event,key, attr.second);
+        if (auto set_md = CloudEventsUtil::SetMetadata(key, attr.second, cloud_event); !set_md.ok()) {
+            return set_md;
+        }
     }
 
     std::string pubsub_data = pubsub_msg.data();
@@ -57,10 +59,11 @@ absl::StatusOr<CloudEvent> Binder<PubsubMessage>::UnbindBinary(PubsubMessage& pu
         }
         cloud_event.set_binary_data((*decoded));
     }
-    
-    if (!CloudEventsUtil::IsValid(cloud_event)) {
-        return absl::InvalidArgumentError("Pubsub Message given does not contain a valid binary Cloud Event");
+
+    if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
+        return is_valid;
     }
+
     return cloud_event;
 }
 
@@ -80,8 +83,8 @@ absl::Status Binder<PubsubMessage>::SetPayload(
 
 template <>
 absl::StatusOr<PubsubMessage> Binder<PubsubMessage>::BindBinary(CloudEvent& cloud_event) {
-    if (!CloudEventsUtil::IsValid(cloud_event)) {
-        return absl::InvalidArgumentError("Cloud Event given is not valid.");
+    if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
+        return is_valid;
     }
 
     PubsubMessage pubsub_msg;
