@@ -15,7 +15,7 @@ using ::cloudevents::cloudevents_util::CloudEventsUtil;
 typedef absl::flat_hash_map<std::string, CloudEvent_CloudEventAttribute>
   CeAttrMap;
 
-inline static constexpr char kPubsubContenttypeKey[] = "content-type";
+inline static const std::string kPubsubContenttypeKey = "content-type";
 
 // _____ Specializations for Unbind Structured _____
 
@@ -48,7 +48,7 @@ absl::Status Binder<PubsubMessage>::UnbindMetadata(
     if (attr.first == kPubsubContenttypeKey) {
       key = kContenttypeKey;
     } else if (attr.first.rfind(kMetadataPrefix, 0) == 0){
-      size_t len_prefix = strlen(kMetadataPrefix);
+      size_t len_prefix = kMetadataPrefix.length();
       key = attr.first.substr(len_prefix, std::string::npos);
     }
     if (auto set_md = CloudEventsUtil::SetMetadata(key, attr.second,
