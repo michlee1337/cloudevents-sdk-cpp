@@ -34,7 +34,6 @@ template <>
 absl::StatusOr<std::string> Binder<PubsubMessage>::GetPayload(
     const PubsubMessage& pubsub_msg) {
   // get payload and base64 decode
-  // no need to unpack due to matching return type
   return base64::base64_decode(pubsub_msg.data());
 }
 
@@ -88,57 +87,33 @@ absl::Status Binder<PubsubMessage>::SetPayload(
 }
 
 template <>
-absl::StatusOr<PubsubMessage> Binder<PubsubMessage>::BindBinary(
-    const CloudEvent& cloud_event) {
-  if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
-    return is_valid;
+absl::Status Binder<PubsubMessage>::SetMetadata(const std::string& key,
+    const CloudEvent_CloudEventAttribute& val, PubsubMessage& pubsub_msg) {
+  absl::StatusOr<std::string> val_str = CloudEventsUtil::ToString(val);
+  if (!val_str.ok()) {
+    return val_str.status();
   }
+  (*pubsub_msg.mutable_attributes())[key] = *val_str;
+  return absl::OkStatus();
+}
 
-  PubsubMessage pubsub_msg;
+template <>
+absl::Status Binder<PubsubMessage>::SetBinaryData(const std::string& bin_data,
+    PubsubMessage& pubsub_msg) {
+  // both CloudEvent.data and pubsub_msg.data are base64 encoded
+  pubsub_msg.set_data(bin_data);
+  return absl::OkStatus();
+}
 
-  absl::StatusOr<CeAttrMap> attrs;
-  attrs = CloudEventsUtil::GetMetadata(cloud_event);
-  if (!attrs.ok()) {
-    return attrs.status();
+template <>
+absl::Status Binder<PubsubMessage>::SetTextData(const std::string& text_data,
+    PubsubMessage& pubsub_msg) {
+  absl::StatusOr<std::string> encoded = base64::base64_encode(text_data);
+  if (!encoded.ok()) {
+    return encoded.status();
   }
-
-  for (auto const& attr : (*attrs)) {
-    absl::StatusOr<std::string> val = CloudEventsUtil::ToString(attr.second);
-    if (!val.ok()) {
-      return val.status();
-    }
-    std::string key = kMetadataPrefix + attr.first;
-    (*pubsub_msg.mutable_attributes())[key] = (*val);
-  }
-
-  std::string data;
-  switch (cloud_event.data_oneof_case()) {
-    // curly braces to prevent cross initialization
-    case CloudEvent::DataOneofCase::kBinaryData: {
-      // cloud event spec uses base64 encoding for binary data as well
-      data = cloud_event.binary_data();
-      break;
-    }
-    case CloudEvent::DataOneofCase::kTextData: {
-      absl::StatusOr<std::string> encoded;
-      encoded = base64::base64_encode(cloud_event.text_data());
-      if (!encoded.ok()) {
-        return encoded.status();
-      }
-      data = (*encoded);
-      break;
-    }
-    case CloudEvent::DataOneofCase::kProtoData: {
-      // TODO (#17): Handle CloudEvent Any in JsonFormatter
-      return absl::UnimplementedError("protobuf::Any not supported yet.");
-    }
-    case CloudEvent::DATA_ONEOF_NOT_SET: {
-      break;
-    }
-  }
-
-  pubsub_msg.set_data(data);
-  return pubsub_msg;
+  pubsub_msg.set_data(*encoded);
+  return absl::OkStatus();
 }
 
 }  // namespace binding
