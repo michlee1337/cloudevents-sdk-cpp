@@ -12,126 +12,134 @@ using ::cloudevents::format::Formatter;
 using ::cloudevents::formatter_util::FormatterUtil;
 using ::cloudevents::cloudevents_util::CloudEventsUtil;
 
-typedef absl::flat_hash_map<std::string, CloudEvent_CloudEventAttribute> CeAttrMap;
+typedef absl::flat_hash_map<std::string, CloudEvent_CloudEventAttribute>
+  CeAttrMap;
 
-constexpr absl::string_view kPubsubContentKey = "content-type";
+inline static constexpr char kPubsubContentKey[] = "content-type";
 
 
 template <>
-absl::StatusOr<std::string> Binder<PubsubMessage>::GetContentType(PubsubMessage& pubsub_msg) {
-    google::protobuf::Map<std::string,std::string> attrs;
-    attrs = pubsub_msg.attributes();
-    auto ind = attrs.find(kPubsubContentKey.data());
-    if (ind == attrs.end()) {
-        return std::string("");
-    }
-    return ind -> second; 
+absl::StatusOr<std::string> Binder<PubsubMessage>::GetContentType(
+    PubsubMessage& pubsub_msg) {
+  google::protobuf::Map<std::string, std::string> attrs =
+    pubsub_msg.attributes();
+  auto ind = attrs.find(kPubsubContentKey);
+  if (ind == attrs.end()) {
+    return std::string("");
+  }
+  return ind -> second;
 }
 
 template <>
-absl::StatusOr<std::string> Binder<PubsubMessage>::GetPayload(PubsubMessage& pubsub_msg) {
-    // get payload and base64 decode
-    return base64::base64_decode(pubsub_msg.data()); // no need to unpack due to matching return type
+absl::StatusOr<std::string> Binder<PubsubMessage>::GetPayload(
+    PubsubMessage& pubsub_msg) {
+  // get payload and base64 decode
+  // no need to unpack due to matching return type
+  return base64::base64_decode(pubsub_msg.data());
 }
 
 template <>
-absl::StatusOr<CloudEvent> Binder<PubsubMessage>::UnbindBinary(PubsubMessage& pubsub_msg) {
-    CloudEvent cloud_event;
+absl::StatusOr<CloudEvent> Binder<PubsubMessage>::UnbindBinary(
+    PubsubMessage& pubsub_msg) {
+  CloudEvent cloud_event;
 
-    for (auto const& attr : pubsub_msg.attributes()) {
-        std::string key;
-        if (attr.first == kPubsubContentKey.data()) {
-            key = kContenttypeKey.data();
-        } else if (attr.first.rfind(kMetadataPrefix.data(), 0) == 0){
-            size_t len_prefix = strlen(kMetadataPrefix.data());
-            key= attr.first.substr(len_prefix, std::string::npos);
-        }
-        if (auto set_md = CloudEventsUtil::SetMetadata(key, attr.second, cloud_event); !set_md.ok()) {
-            return set_md;
-        }
+  for (auto const& attr : pubsub_msg.attributes()) {
+    std::string key;
+    if (attr.first == kPubsubContentKey) {
+      key = kContenttypeKey;
+    } else if (attr.first.rfind(kMetadataPrefix, 0) == 0){
+      size_t len_prefix = strlen(kMetadataPrefix);
+      key = attr.first.substr(len_prefix, std::string::npos);
     }
-
-    std::string pubsub_data = pubsub_msg.data();
-    if (!pubsub_data.empty()) {
-        absl::StatusOr<std::string> decoded = base64::base64_decode(pubsub_data);
-        if (!decoded.ok()) {
-            return decoded.status();
-        }
-        cloud_event.set_binary_data((*decoded));
+    if (auto set_md = CloudEventsUtil::SetMetadata(key, attr.second,
+        cloud_event); !set_md.ok()) {
+      return set_md;
     }
+  }
 
-    if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
-        return is_valid;
+  std::string pubsub_data = pubsub_msg.data();
+  if (!pubsub_data.empty()) {
+    absl::StatusOr<std::string> decoded = base64::base64_decode(pubsub_data);
+    if (!decoded.ok()) {
+      return decoded.status();
     }
+    cloud_event.set_binary_data((*decoded));
+  }
 
-    return cloud_event;
+  if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
+    return is_valid;
+  }
+
+  return cloud_event;
 }
 
 template <>
 absl::Status Binder<PubsubMessage>::SetContentType(
-        PubsubMessage& pubsub_msg, std::string contenttype) {
-    (*pubsub_msg.mutable_attributes())[kPubsubContentKey.data()] = contenttype;
-    return absl::Status();
+    PubsubMessage& pubsub_msg, std::string contenttype) {
+  (*pubsub_msg.mutable_attributes())[kPubsubContentKey] = contenttype;
+  return absl::Status();
 }
 
 template <>
 absl::Status Binder<PubsubMessage>::SetPayload(
-        PubsubMessage& pubsub_msg, std::string payload) {
-    pubsub_msg.set_data(payload);
-    return absl::Status();
+    PubsubMessage& pubsub_msg, std::string payload) {
+  pubsub_msg.set_data(payload);
+  return absl::Status();
 }
 
 template <>
-absl::StatusOr<PubsubMessage> Binder<PubsubMessage>::BindBinary(CloudEvent& cloud_event) {
-    if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
-        return is_valid;
+absl::StatusOr<PubsubMessage> Binder<PubsubMessage>::BindBinary(
+    CloudEvent& cloud_event) {
+  if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
+    return is_valid;
+  }
+
+  PubsubMessage pubsub_msg;
+
+  absl::StatusOr<CeAttrMap> attrs;
+  attrs = CloudEventsUtil::GetMetadata(cloud_event);
+  if (!attrs.ok()) {
+    return attrs.status();
+  }
+
+  for (auto const& attr : (*attrs)) {
+    absl::StatusOr<std::string> val = CloudEventsUtil::ToString(attr.second);
+    if (!val.ok()) {
+      return val.status();
     }
+    std::string key = kMetadataPrefix + attr.first;
+    (*pubsub_msg.mutable_attributes())[key] = (*val);
+  }
 
-    PubsubMessage pubsub_msg;
-
-    absl::StatusOr<CeAttrMap> attrs;
-    attrs = CloudEventsUtil::GetMetadata(cloud_event);
-    if (!attrs.ok()) {
-        return attrs.status();
+  std::string data;
+  switch (cloud_event.data_oneof_case()) {
+    // curly braces to prevent cross initialization
+    case CloudEvent::DataOneofCase::kBinaryData: {
+      // cloud event spec uses base64 encoding for binary data as well
+      data = cloud_event.binary_data();
+      break;
     }
-
-    for (auto const& attr : (*attrs)) {
-        absl::StatusOr<std::string> val = CloudEventsUtil::ToString(attr.second);
-        if (!val.ok()) {
-            return val.status();
-        }
-        std::string key = kMetadataPrefix.data() + attr.first;
-        (*pubsub_msg.mutable_attributes())[key] = (*val);
+    case CloudEvent::DataOneofCase::kTextData: {
+      absl::StatusOr<std::string> encoded;
+      encoded = base64::base64_encode(cloud_event.text_data());
+      if (!encoded.ok()) {
+        return encoded.status();
+      }
+      data = (*encoded);
+      break;
     }
-
-    std::string data;
-    switch (cloud_event.data_oneof_case()) {
-        case CloudEvent::DataOneofCase::kBinaryData: {
-            // cloud event spec uses base64 encoding for binary data as well 
-            data = cloud_event.binary_data();
-            break;
-        }
-        case CloudEvent::DataOneofCase::kTextData: {
-            absl::StatusOr<std::string> encoded;  // curly braces to prevent cross init
-            encoded = base64::base64_encode(cloud_event.text_data());
-            if (!encoded.ok()) {
-                return encoded.status();
-            }
-            data = (*encoded);
-            break;
-        }
-        case CloudEvent::DataOneofCase::kProtoData: {
-            // TODO (#17): Handle CloudEvent Any in JsonFormatter
-            return absl::UnimplementedError("protobuf::Any not supported yet.");
-        }
-        case CloudEvent::DATA_ONEOF_NOT_SET: {
-            break;
-        }
+    case CloudEvent::DataOneofCase::kProtoData: {
+      // TODO (#17): Handle CloudEvent Any in JsonFormatter
+      return absl::UnimplementedError("protobuf::Any not supported yet.");
     }
+    case CloudEvent::DATA_ONEOF_NOT_SET: {
+      break;
+    }
+  }
 
-    pubsub_msg.set_data(data);
-    return pubsub_msg;
+  pubsub_msg.set_data(data);
+  return pubsub_msg;
 }
 
-} // binding
-} // cloudevents
+}  // namespace binding
+}  // namespace cloudevents
