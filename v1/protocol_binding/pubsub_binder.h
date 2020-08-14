@@ -15,30 +15,30 @@ namespace binding {
 template <>
 absl::StatusOr<std::string> 
     Binder<google::pubsub::v1::PubsubMessage>::GetContentType(
-    google::pubsub::v1::PubsubMessage& pubsub_msg);
+    const google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
 absl::StatusOr<std::string> 
     Binder<google::pubsub::v1::PubsubMessage>::GetPayload(
-    google::pubsub::v1::PubsubMessage& pubsub_msg);
+    const google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
 absl::StatusOr<io::cloudevents::v1::CloudEvent> 
     Binder<google::pubsub::v1::PubsubMessage>::UnbindBinary(
-    google::pubsub::v1::PubsubMessage& pubsub_msg);
+    const google::pubsub::v1::PubsubMessage& pubsub_msg);
+
+template <>
+absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetContentType(
+    const std::string& contenttype, google::pubsub::v1::PubsubMessage& message);
+
+template <>
+absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetPayload(
+    const std::string& payload, google::pubsub::v1::PubsubMessage& message);
 
 template <>
 absl::StatusOr<google::pubsub::v1::PubsubMessage> 
     Binder<google::pubsub::v1::PubsubMessage>::BindBinary(
-    io::cloudevents::v1::CloudEvent& cloud_event);
-
-template <>
-absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetContentType(
-    google::pubsub::v1::PubsubMessage& message, std::string contenttype);
-
-template <>
-absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetPayload(
-    google::pubsub::v1::PubsubMessage& message, std::string payload);
+    const io::cloudevents::v1::CloudEvent& cloud_event);
 
 } // binding
 } // cloudevents
