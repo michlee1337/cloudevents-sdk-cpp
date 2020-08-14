@@ -14,31 +14,40 @@ namespace binding {
  */
 template <>
 absl::StatusOr<std::string> 
-    Binder<google::pubsub::v1::PubsubMessage>::GetContentType(
-    const google::pubsub::v1::PubsubMessage& pubsub_msg);
+  Binder<google::pubsub::v1::PubsubMessage>::GetContentType(
+  const google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
 absl::StatusOr<std::string> 
-    Binder<google::pubsub::v1::PubsubMessage>::GetPayload(
-    const google::pubsub::v1::PubsubMessage& pubsub_msg);
+  Binder<google::pubsub::v1::PubsubMessage>::GetPayload(
+  const google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
 absl::StatusOr<io::cloudevents::v1::CloudEvent> 
-    Binder<google::pubsub::v1::PubsubMessage>::UnbindBinary(
-    const google::pubsub::v1::PubsubMessage& pubsub_msg);
+  Binder<google::pubsub::v1::PubsubMessage>::UnbindBinary(
+  const google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
 absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetContentType(
-    const std::string& contenttype, google::pubsub::v1::PubsubMessage& message);
+  const std::string& contenttype, google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
 absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetPayload(
-    const std::string& payload, google::pubsub::v1::PubsubMessage& message);
+  const std::string& payload, google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 template <>
-absl::StatusOr<google::pubsub::v1::PubsubMessage> 
-    Binder<google::pubsub::v1::PubsubMessage>::BindBinary(
-    const io::cloudevents::v1::CloudEvent& cloud_event);
+absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetMetadata(
+  const std::string& key,
+  const io::cloudevents::v1::CloudEvent_CloudEventAttribute& val,
+  google::pubsub::v1::PubsubMessage& pubsub_msg);
+
+template <>
+absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetBinaryData(
+  const std::string& bin_data, google::pubsub::v1::PubsubMessage& pubsub_msg);
+
+template <>
+absl::Status Binder<google::pubsub::v1::PubsubMessage>::SetTextData(
+  const std::string& text_data, google::pubsub::v1::PubsubMessage& pubsub_msg);
 
 } // binding
 } // cloudevents
