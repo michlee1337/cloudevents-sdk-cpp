@@ -11,9 +11,7 @@
 namespace cloudevents {
 namespace format {
 
-/*
- * Implementation of Formatter for JSON EventFormat
- */
+// Implementation of Formatter for JSON EventFormat
 class JsonFormatter: public Formatter {
  public:
   // Create Json-formatted serialization from CloudEvent

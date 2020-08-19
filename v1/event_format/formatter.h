@@ -8,11 +8,9 @@
 namespace cloudevents {
 namespace format {
 
-/*
- * Abstract Class that will have a concrete implementation for each supported EventFormat.
- * Formatters will handle marshalling between CloudEvents and 
- * StructuredCloudEvents (serializations based on EventFormats)
- */
+// Abstract Class that will have a concrete implementation for each supported EventFormat.
+// Formatters will handle marshalling between CloudEvents and 
+// StructuredCloudEvents (serializations based on EventFormats)
 class Formatter {
  public:
   // Marshal a CloudEvent into a StructuredCloudEvent
