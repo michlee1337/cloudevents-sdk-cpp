@@ -28,7 +28,8 @@ absl::Status CloudEventsUtil::IsValid(const CloudEvent& cloud_event) {
 absl::StatusOr<
     absl::flat_hash_map<std::string, CloudEvent_CloudEventAttribute>>
     CloudEventsUtil::GetMetadata(const CloudEvent& cloud_event) {
-  if (auto is_valid = CloudEventsUtil::IsValid(cloud_event); !is_valid.ok()) {
+  absl::Status is_valid = CloudEventsUtil::IsValid(cloud_event);
+  if (!is_valid.ok()) {
     return is_valid;
   }
 
