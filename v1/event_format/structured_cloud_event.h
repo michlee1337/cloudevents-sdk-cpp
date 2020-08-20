@@ -13,7 +13,7 @@ struct StructuredCloudEvent {
   Format format;
 
   // The serialization of the CloudEvent
-  std::string serialization;
+  std::string serialized_data;
 };
 
 }  // namespace format

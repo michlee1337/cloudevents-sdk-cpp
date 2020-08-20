@@ -1,6 +1,6 @@
 /**
- * IMPORTANT: this file is a fork of the soon to be open-source absl::StatusOr class.
- * When the absl::StatusOr lands this file will be removed.
+ * IMPORTANT: this file is a fork of the soon to be open-source cloudevents_absl::StatusOr class.
+ * When the cloudevents_absl::StatusOr lands this file will be removed.
  */
 
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
